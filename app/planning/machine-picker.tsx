@@ -1,0 +1,6 @@
+import { planningMachines } from '../../lib/planning/routines-client';
+type Machine = { id: string; name: string; archived?: boolean };
+export function PlanningMachinePicker({ machines, value, onChange }: { machines: Machine[]; value: { machine?: string; machines?: string[] }; onChange: (ids: string[]) => void }) {
+    const selected = planningMachines(value), available = machines.filter(m => !m.archived), missing = selected.filter(id => !available.some(m => m.id === id));
+    return <fieldset><legend>Machines concernées *</legend><div className="actions"><button type="button" onClick={() => onChange(available.map(m => m.id))}>Toutes les machines</button><button type="button" onClick={() => onChange([])}>Tout décocher</button></div>{available.map(machine => <label className="check" key={machine.id}><input type="checkbox" checked={selected.includes(machine.id)} onChange={e => onChange(e.target.checked ? [...selected, machine.id] : selected.filter(id => id !== machine.id))}/>{machine.name}</label>)}{missing.map(id => <label className="check" key={id}><input type="checkbox" checked onChange={() => onChange(selected.filter(value => value !== id))}/>Machine absente ou archivée — à retirer</label>)}<small>{selected.length} machine(s) sélectionnée(s). Cochez les machines à inclure.</small></fieldset>;
+}

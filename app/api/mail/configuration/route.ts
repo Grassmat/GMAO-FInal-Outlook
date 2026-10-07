@@ -1,0 +1,10 @@
+import { currentUser,sameOrigin,json,replyError,AppError } from '../../../../lib/auth';
+import { mailConfigurationStatus,saveMicrosoftClient,startMicrosoftConnection,disconnectMail } from '../../../../lib/mail/configuration';
+import { accountRateLimit } from '../../../../lib/account/links';
+import { sendMail } from '../../../../lib/mail/provider';
+export async function GET(req:Request){try{const url=new URL(req.url);return json(await mailConfigurationStatus(await currentUser(req),url.searchParams.get('site')||'',url.searchParams.get('purpose')||'automatic'));}catch(e){return replyError(e);}}
+export async function POST(req:Request){try{sameOrigin(req);const user=await currentUser(req),text=await req.text();if(text.length>4096)throw new AppError('Configuration trop volumineuse.');const b=JSON.parse(text);if(b.action==='client')return json(await saveMicrosoftClient(user,b));const site=typeof b.site==='string'?b.site:'',purpose=typeof b.purpose==='string'?b.purpose:'automatic',status=await mailConfigurationStatus(user,site,purpose);
+ if(b.action==='connect'){await accountRateLimit('microsoft-connect:'+user.id,10);const result=await startMicrosoftConnection(user,site,purpose),response=json({url:result.url});response.headers.set('Set-Cookie','__Host-gmao_microsoft='+result.token+'; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600');return response;}
+ if(b.action==='disconnect')return json(await disconnectMail(user,site,purpose,b.revision));
+ if(b.action==='test'){if(!status.connected)throw new AppError('Connectez la boîte d’abord.');await accountRateLimit('delivery-test:'+user.id,3);await sendMail({site,category:purpose==='quote'?'quote':'account',to:status.sender,senderEmail:purpose==='quote'?status.sender:undefined,subject:'GMAO — Test de connexion Outlook',text:'Votre boîte Outlook est connectée à la GMAO. Les mails seront envoyés depuis cette adresse.',key:'config-test/'+crypto.randomUUID()});return json({ok:true,message:'Mail de test accepté par Outlook. Vérifiez votre boîte et les indésirables.'});}
+ throw new AppError('Action inconnue.');}catch(e){return replyError(e);}}

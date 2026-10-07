@@ -1,0 +1,10 @@
+'use client';
+import { Trash2, ArrowDownToLine, ArrowUpFromLine } from 'lucide-react';
+import type { MaintenanceModel } from './use-maintenance';
+export function StockView({ model }: {
+  model: MaintenanceModel;
+}) {
+  const { tab, selected, displayedParts, qty, setModal } = model;
+  return <> {(tab === 'Magasin' || selected) && <section className="panel"><h2>{selected ? 'Pièces compatibles' : 'Stock du site'}</h2>{!displayedParts.length ? <div className="empty">Aucune pièce enregistrée. Ajoutez une référence dans le magasin et associez les machines compatibles.</div> : <div className="table-wrap"><table><thead><tr><th>Pièce / référence</th><th>Emplacement</th><th>Stock</th><th>Minimum</th><th>Actions</th></tr></thead><tbody>{displayedParts.map(p => <tr key={p.id}><td><button className="text-button" onClick={() => setModal({ ...p })}>{p.name}</button><small>{p.reference || 'Sans référence'} · {p.machines?.length || 0} machine(s)</small></td><td>{p.location || '—'}</td><td><b className={qty(p.id) < (p.minimum || 0) ? 'red' : ''}>{qty(p.id)}</b></td><td>{model.readOnly ? p.minimum || 0 : <button className="minimum-button" aria-label={"Modifier le minimum de " + p.name} onClick={() => setModal({ action: 'minimum', id: p.id, name: p.name, minimum: p.minimum || 0 })}>{p.minimum || 0} · Modifier</button>}</td><td>{!model.readOnly && <div className="actions"><button onClick={() => setModal({ action: 'movement', clientId: crypto.randomUUID(), part: p.id, name: p.name, quantity: 1, movementDirection: 1, reason: 'Réception', machine: selected?.id || '' })}><ArrowDownToLine size={16} />Entrée</button><button onClick={() => setModal({ action: 'movement', clientId: crypto.randomUUID(), part: p.id, name: p.name, quantity: -1, movementDirection: -1, reason: 'Consommation', machine: selected?.id || '' })}><ArrowUpFromLine size={16} />Sortie</button>{model.user.role === 'admin' && <button className="danger" aria-label={"Supprimer " + p.name} onClick={() => setModal({ action: 'delete-part', id: p.id, name: p.name, reference: p.reference })}><Trash2 size={16} />Supprimer</button>}</div>}</td></tr>)}</tbody></table></div>}</section>}
+  </>;
+}

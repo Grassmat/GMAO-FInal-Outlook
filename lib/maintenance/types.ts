@@ -1,0 +1,62 @@
+import type { User } from "../auth";
+export type { User };
+export type Row = {
+  id: string;
+  kind: string;
+  site: string;
+  name: string;
+  archived?: boolean;
+  serviceState?: 'running' | 'stopped' | 'unknown' | string;
+  waitingNote?: string;
+  waitingOrder?: string | null;
+  stateReport?: string;
+  stateRevision?: number;
+  reference?: string;
+  location?: string;
+  minimum?: number;
+  machines?: string[];
+  status?: string;
+  supplier?: string;
+  url?: string;
+  machine?: string;
+  deleted?: boolean;
+  part?: string;
+  quantity?: number;
+  revision?: number;
+  receivedAt?: string;
+  createdAt?: string;
+  creationOrder?: number;
+  clientId?: string;
+};
+export type Site = {
+  id: string;
+  name: string;
+};
+export type Movement = {
+  id: string;
+  part: string;
+  site: string;
+  quantity: number;
+  machine: string | null;
+  reason: string;
+  actor: string;
+  created: string;
+  intervention: string | null;
+};
+export type Reports = {
+  form: string;
+  sheet: string;
+} | null;
+export type Tab = 'Planning' | 'Machines' | 'Magasin' | 'Interventions' | 'Devis & achats' | 'Sites' | 'Utilisateurs';
+export type Draft = Partial<Row> & {
+  intervention?: string;
+  interventionRevision?: number;
+  waitingNote?: string;
+  action?: 'movement' | 'delete-part' | 'delete-order' | 'minimum';
+  quantity?: number;
+  part?: string;
+  reason?: string;
+  pdfFile?: File | null;
+  documentId?: string;
+};
+export const roleNames: Record<string, string> = { admin: 'Administrateur', director: 'Directeur technique', manager: 'Responsable maintenance', technician: 'Technicien de maintenance' };

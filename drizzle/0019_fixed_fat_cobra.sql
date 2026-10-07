@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `test_account` integer DEFAULT 0 NOT NULL;

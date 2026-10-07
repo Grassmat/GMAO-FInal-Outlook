@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `planning_create` integer DEFAULT 0 NOT NULL;
